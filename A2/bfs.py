@@ -5,26 +5,29 @@ from utils import children
 def bfs(maze, start, end):
 	q = collections.deque()
 
-	explored = set([start])
-	q.append(start)
+	# set uses constant look up time, use to ensure we ignore repeated positions
+	checked = set([start])
+	# queue of paths, paths are growing lists of points
+	q.append([start])
 
-	cost = 0
-	curr = start
+	expandedCount = 0
+	curr = None
 
-	while(len(q)>0):
+	while(True):
 		qLength = len(q)
 		for i in range(qLength):
-			curr = q.popleft()
-			print(curr)
+			# pop and get the last position of the path
+			currPath = q.popleft()
+			curr = currPath[-1]
+			expandedCount = expandedCount + 1
 			if curr == end:
-				break
+				print("Solution path is: " + str(currPath))
+				print("Solution cost is: " + str(len(currPath)))
+				print("Number of nodes explored: " + str(expandedCount))
+				return
 			for child in children(maze, curr):
-				if child not in explored:
-					q.append(child)
-					explored.add(child)
-		cost = cost + 1
-			
-
-
-	print(len(explored))
-	print(cost)
+				if child not in checked:
+					newPath = list(currPath)
+					newPath.append(child)
+					q.append(newPath)
+					checked.add(child)

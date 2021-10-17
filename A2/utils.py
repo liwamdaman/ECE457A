@@ -5,18 +5,14 @@ def children(maze, node):
 	upMax = len(maze)-1
 
 	children = []
-	# print(maze)
-	# print(node)
-	if node.x > 0 and maze[node.y][node.x-1] == 0:
-		#print("hi")
-		children.append(Point(node.x-1, node.y))
-	if node.y > 0 and maze[node.y-1][node.x] == 0:
-		children.append(Point(node.x, node.y-1))
-	if node.x < rightMax and maze[node.y][node.x+1] == 0:
-		children.append(Point(node.x+1, node.y))
+
 	if node.y < upMax and maze[node.y+1][node.x] == 0:
 		children.append(Point(node.x, node.y+1))
-
-	#print(children)
+	if node.x < rightMax and maze[node.y][node.x+1] == 0:
+		children.append(Point(node.x+1, node.y))
+	if node.y > 0 and maze[node.y-1][node.x] == 0:
+		children.append(Point(node.x, node.y-1))
+	if node.x > 0 and maze[node.y][node.x-1] == 0:
+		children.append(Point(node.x-1, node.y))
 
 	return children

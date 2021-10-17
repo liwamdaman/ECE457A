@@ -40,9 +40,14 @@ end3 = Point(24, 24)
 
 
 from bfs import bfs
+print("Breadth-first search, starting at S (2,11) and ending at E1 (23, 19)")
 bfs(maze, start1, end1)
-# bfs(maze, start2, end2)
-# bfs(maze, start3, end3)
+print()
+print("Breadth-first search, starting at S (2,11) and ending at E2 (2, 21)")
+bfs(maze, start2, end2)
+print()
+print("Breadth-first search, starting at (0,0) and ending at (24, 24)")
+bfs(maze, start3, end3)
 
 # dfs(maze, start1, end1)
 # dfs(maze, start2, end2)
