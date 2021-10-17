@@ -10,3 +10,6 @@ class Point:
 
     def __hash__(self):
         return hash((self.x, self.y))
+
+    def __repr__(self):
+        return "(" + str(self.x) + ", " + str(self.y) + ")"

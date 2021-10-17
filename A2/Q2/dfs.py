@@ -1,30 +1,30 @@
-import collections
 from utils import children
 
-def bfs(maze, start, end):
-	q = collections.deque()
+def dfs(maze, start, end):
+
+	# stack of paths, paths are growing lists of points
+	stack = []
+	stack.append([start])
 
 	# set uses constant look up time, use to ensure we ignore repeated positions
 	checked = set([start])
-	# queue of paths, paths are growing lists of points
-	q.append([start])
 
 	expandedCount = 0
 
 	while(True):
-		# pop and get the last position of the path
-		currPath = q.popleft()
+		currPath = stack.pop()
 		curr = currPath[-1]
 		expandedCount = expandedCount + 1
+
 		if curr == end:
 			print("Solution path is: " + str(currPath))
 			print("Solution cost is: " + str(len(currPath)))
 			print("Number of nodes explored: " + str(expandedCount))
 			return
+
 		for child in children(maze, curr):
 			if child not in checked:
 				newPath = list(currPath)
 				newPath.append(child)
-				q.append(newPath)
+				stack.append(newPath)
 				checked.add(child)
-			
