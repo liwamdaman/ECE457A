@@ -3,9 +3,13 @@
 
 import random
 import operator
+import numpy
+import matplotlib.pyplot as plt
+import pygraphviz as pgv
 
 from deap import gp
 from deap import creator
+from deap import algorithms
 from deap import tools
 from deap import base
 
@@ -37,7 +41,7 @@ for i in range(2 ** MUX_TOTAL_LINES):
 def ifFunction(condition, out1, out2):
     return out1 if condition else out2
 
-pset = gp.PrimitiveSet("MAIN", MUX_TOTAL_LINES, "IN")
+pset = gp.PrimitiveSet("MAIN", MUX_TOTAL_LINES, "MUX")
 pset.addPrimitive(operator.and_, 2)
 pset.addPrimitive(operator.or_, 2)
 pset.addPrimitive(operator.not_, 1)
@@ -65,58 +69,40 @@ toolbox.register("expr_mut", gp.genGrow, min_=2, max_=4)
 toolbox.register("mutate", gp.mutUniform, expr=toolbox.expr_mut, pset=pset)
 
 # Tournament based selection function
-toolbox.register("select", tools.selTournament, tournsize=10)
+toolbox.register("select", tools.selTournament, tournsize=50)
 
 def main():
-	pop = toolbox.population(n=50)
-	# As we learned in class, Pm should be kept small
-	mutationProb = 0.05
-	crossoverProb = 0.5
+	pop = toolbox.population(n=500)
+	mutationProb = 0.1
+	crossoverProb = 0.8
 	numGen = 50
 
-	# Evaluate the entire population
-	fitnesses = map(toolbox.evaluate, pop)
-	for ind, fit in zip(pop, fitnesses):
-		ind.fitness.values = fit
-		#print(fit)
+	hof = tools.HallOfFame(1)
+	stats = tools.Statistics(lambda ind: ind.fitness.values)
+	stats.register("avg", numpy.mean)
+	stats.register("std", numpy.std)
+	stats.register("min", numpy.min)
+	stats.register("max", numpy.max)
 
-	for g in range(numGen):
+	log = algorithms.eaSimple(pop, toolbox, crossoverProb, mutationProb, numGen, stats, halloffame=hof, verbose=True)
 
-		offspring = list(map(toolbox.clone, pop))
+	# Graph the final result
+	nodes, edges, labels = gp.graph(hof[0])
+	g = pgv.AGraph()
+	g.add_nodes_from(nodes)
+	g.add_edges_from(edges)
+	g.layout(prog="dot")
+	for i in nodes:
+		n = g.get_node(i)
+		n.attr["label"] = labels[i]
+	g.draw("tree.pdf")
 
-		# Following the GP flowchart used in the notes
-		i = 1
-		while (i < len(offspring)):
-			if i == len(offspring) - 1:
-				# perform mutation, we only have room for one more offspring for the next generation
-				selected = toolbox.select(offspring, 1)
-				toolbox.mutate(selected[0])
-				del selected[0].fitness.values
-				i = i + 1
-			else:
-				# Choose to perform crossover or mutation probabilistically
-				if random.random() < mutationProb:
-					selected = toolbox.select(offspring, 1)
-					toolbox.mutate(selected[0])
-					del selected[0].fitness.values
-					i = i + 1
-				else:
-					selected = toolbox.select(offspring, 2)
-					toolbox.mate(selected[0], selected[1])
-					del selected[0].fitness.values
-					del selected[1].fitness.values
-					i = i + 2
-
-		# Update fitnesses and print best fitness of population each generation
-		bestFitness = 0
-		fitnesses = map(toolbox.evaluate, offspring)
-		for ind, fit in zip(offspring, fitnesses):
-			ind.fitness.values = fit
-			if fit[0] > bestFitness:
-				bestFitness = fit[0]
-		print(bestFitness)
-
-		pop[:] = offspring
+	# Plot best fitness each iteration
+	print(log[1].select("max"))
+	plt.plot(log[1].select("max"))
+	plt.ylabel("Best program fitness each generation")
+	plt.xlabel("Generation")
+	plt.show()
 
 if __name__ == "__main__":
     main()
